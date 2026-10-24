@@ -1,0 +1,12 @@
+file(REMOVE_RECURSE
+  "/home/nuc-admin/catkin_ws/devel/lib/fast_lio_localization/fastlio_mapping1"
+  "/home/nuc-admin/catkin_ws/devel/lib/fast_lio_localization/fastlio_mapping1.pdb"
+  "CMakeFiles/fastlio_mapping1.dir/include/ikd-Tree/ikd_Tree.cpp.o"
+  "CMakeFiles/fastlio_mapping1.dir/src/laserMapping.cpp.o"
+  "CMakeFiles/fastlio_mapping1.dir/src/preprocess.cpp.o"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/fastlio_mapping1.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

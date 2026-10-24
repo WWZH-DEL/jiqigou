@@ -1,0 +1,8 @@
+prefix=/home/nuc-admin/catkin_ws/devel
+
+Name: sentry_nav
+Description: Description of sentry_nav
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

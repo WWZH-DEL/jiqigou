@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="astar_avoid" pkg="astar_search" type="astar_avoid_node"
+        output="screen" respawn="true" respawn_delay="2.0" />
+</launch>

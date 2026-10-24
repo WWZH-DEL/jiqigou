@@ -1,0 +1,2 @@
+FAST_LIO_LOCALIZATION:astar_search:cmdvel2lcm_py:fast_lio:livox_ros_driver2:pcd2pgm:sentry_nav:sentry_tools/velocity_smoother_ema
+-DROS_EDITION=ROS1 -DCATKIN_DEVEL_PREFIX=/home/nuc-admin/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/nuc-admin/catkin_ws/install -G Unix Makefiles

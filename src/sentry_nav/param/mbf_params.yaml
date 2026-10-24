@@ -1,0 +1,29 @@
+# mbf_params.yaml
+
+# --------------------------------------------------------------------------
+# 1. 全局规划器配置
+# --------------------------------------------------------------------------
+planners:
+  - name: "GlobalPlanner"            # 这个名字可以自定义
+    type: "global_planner/GlobalPlanner"  # 插件类型 (固定写法)
+
+# --------------------------------------------------------------------------
+# 2. 局部规划器 (控制器) 配置
+# --------------------------------------------------------------------------
+controllers:
+  - name: "TebLocalPlanner"          # 这个名字可以自定义
+    type: "teb_local_planner/TebLocalPlannerROS" # 插件类型 (固定写法)
+
+# --------------------------------------------------------------------------
+# 3. 恢复行为 (当卡住时尝试的操作)
+# --------------------------------------------------------------------------
+recovery_behaviors:
+  - name: "conservative_reset"
+    type: "clear_costmap_recovery/ClearCostmapRecovery"
+  - name: "rotate_recovery"
+    type: "rotate_recovery/RotateRecovery"
+    
+publish_global_plan: true
+
+    
+robot_base_frame: body_foot

@@ -1,0 +1,131 @@
+# ==============================================================================
+# TEB Local Planner 通用配置模板
+# 适用场景：室内/室外混合环境，动态/静态障碍物
+# 机器人类型：默认配置为差速底盘 (Diff-Drive)，全向车需修改 holonomic_robot
+# ==============================================================================
+
+base_local_planner: "teb_local_planner/TebLocalPlannerROS"
+
+controller_frequency: 20.0  # 控制频率，建议 20Hz - 50Hz
+
+TebLocalPlannerROS:
+  # --------------------------------------------------------------------------
+  # 1. 基础设置 (Basic Setup)
+  # --------------------------------------------------------------------------
+  odom_topic: "Odometry"              # 里程计话题，根据实际修改 (如 /odom, /robot/odom)
+  map_frame: "map"                # 全局地图坐标系
+  global_frame_id: "map"          # 全局规划参考系
+  
+  # 机器人运动学模型
+  holonomic_robot: false          # ✅ 差速底盘设为 false; 全向车 (麦克纳姆轮) 设为 true
+  max_vel_x: 2                  # 最大线速度 (m/s) - 根据机器人性能调整
+  max_vel_x_backwards: 0.4        # 最大倒车速度 (通常设为正向的一半)
+  max_vel_theta: 1.0              # 最大角速度 (rad/s)
+  acc_lim_x: 1.5                  # 最大线加速度
+  acc_lim_theta: 1.5             # 最大角加速度
+  
+  # 最小转弯半径 (差速底盘为 0，阿克曼转向需设置轴距相关值)
+  min_turning_radius: 0.0         
+  wheelbase: 0.8                  # 轮距 (仅当 cfg_time_parametrization=1 且需要精确运动学时使用)
+  cmd_angle_instead_rotvel: false # 是否发送角度指令而非角速度 (通常 false)
+
+  # --------------------------------------------------------------------------
+  # 2. 目标容差 (Goal Tolerance)
+  # --------------------------------------------------------------------------
+  xy_goal_tolerance: 0.2         # 到达目标的距离容差 (m) - 20cm 是通用标准
+  yaw_goal_tolerance: 0.15        # 到达目标的角度容差 (rad) - 约 8.5 度
+  latch_xy_goal_tolerance: true  # 是否锁定容差 (false 允许微调，true 防止震荡)
+                                  # 通用建议：false (让机器人尝试对准)，若震荡严重再改 true
+
+  # --------------------------------------------------------------------------
+  # 3. 机器人轮廓 (Robot Footprint) - ⚠️ 必须根据实际修改
+  # --------------------------------------------------------------------------
+  # 推荐使用多边形 (polygon) 以获得更精确的避障
+  footprint_model:
+    type: "polygon"
+    # 示例：长 1.0m, 宽 0.6m 的矩形，中心在 (0,0)
+    # 格式：[x, y] 逆时针顺序
+    vertices: [
+      [-0.5, -0.3],
+      [-0.5,  0.3],
+      [ 0.5,  0.3],
+      [ 0.5, -0.3]
+    ]
+  # 如果是圆形机器人，可使用 type: "circle", radius: 0.3
+
+  # --------------------------------------------------------------------------
+  # 4. 避障参数 (Obstacle Avoidance)
+  # --------------------------------------------------------------------------
+  min_obstacle_dist: 0.25         # 与障碍物的最小物理距离 (m) - 安全红线
+  inflation_dist: 0.6             # 膨胀层距离 (m) - 必须 > min_obstacle_dist
+                                  # 作用：在此距离内开始减速/绕行，提供缓冲
+  
+  include_costmap_obstacles: true # 是否考虑代价地图中的障碍物
+  costmap_obstacles_behind_robot_dist: 1  # 考虑身后多远距离的障碍物
+  obstacle_poses_affected: 50     # 优化时受影响的障碍物点数 (越多越平滑，计算量越大)
+
+  # --------------------------------------------------------------------------
+  # 5. 轨迹优化权重 (Optimization Weights) - 核心 tuning 区域
+  # --------------------------------------------------------------------------
+  # 权重越大，规划器越重视该项
+  weight_optimaltime: 2.0         # 时间最优权重 (鼓励快速到达)
+  weight_obstacle: 60           # 避障权重 (高值 = 严格避障)
+  weight_inflation: 1           # 膨胀层权重 (低值 = 允许贴近膨胀区边缘)
+  weight_goal: 100.0              # 目标吸引力 (高值 = 努力冲向终点)
+  weight_viapoint: 50.0           # 全局路径跟随权重 (高值 = 紧贴全局路径)
+  weight_kinematics_forward_drive: 100.0 # 鼓励向前行驶
+  weight_kinematics_turning_radius: 1.0  # 鼓励满足转弯半径约束
+  
+  # 动态障碍物权重 (如果环境中有动态人/车)
+  weight_dynamic_obstacle: 50.0   
+  dynamic_obstacle_inflation_dist: 0.7
+
+  # --------------------------------------------------------------------------
+  # 6. 多路径规划 (Homotopy Class Planning) - TEB 的灵魂
+  # --------------------------------------------------------------------------
+  enable_homotopy_class_planning: true   # ✅ 开启：允许探索不同拓扑路径 (如左绕/右绕)
+  enable_multithreading: true            # 开启多线程加速计算
+  max_number_classes: 5                  # 最多保留几条备选路径
+  selection_cost_hysteresis: 1.0         # 路径切换的滞后阈值 (防止频繁跳变)
+  selection_obst_cost_scale: 1.0         # 选择路径时的障碍物代价缩放
+  selection_alternative_time_cost: false 
+  
+  # 聚类参数 (用于合并相似路径)
+  roadmap_graph_no_samples: 15
+  roadmap_graph_area_width: 2.0          # 搜索走廊宽度 (m)
+  h_signature_prescaler: 0.5
+  h_signature_threshold: 0.1
+  obstacle_keypoint_offset: 0.1
+  obstacle_heading_threshold: 0.45
+  visualize_hc_graph: false              # 调试用：可视化同伦图
+
+  # --------------------------------------------------------------------------
+  # 7. 轨迹参数化 (Trajectory Parametrization)
+  # --------------------------------------------------------------------------
+  teb_autosize: true            # 自动调整轨迹时间步长
+  dt_ref: 0.3                   # 期望的时间分辨率 (s)
+  dt_hysteresis: 0.03           # 重采样滞后阈值
+  global_plan_overwrite_orientation: true # 是否用全局路径方向覆盖初始方向
+  allow_init_with_backwards_motion: false # 是否允许初始规划包含后退动作
+  max_global_plan_lookahead_dist: 3.0     # 全局路径预看距离 (m)
+  
+  # 轨迹点数量限制
+  force_reinit_new_goal_dist: 1.0 # 新目标距离超过此值时强制重新初始化
+  force_reinit_new_goal_angular: 0.5 # 新目标角度超过此值时强制重新初始化
+  
+  # 可行性检查
+  feasibility_check_no_poses: 5   # 检查前几个点的可行性
+  publish_feedback: false         # 是否发布详细反馈 (调试用)
+
+  # --------------------------------------------------------------------------
+  # 8. 震荡抑制与恢复 (Oscillation Recovery)
+  # --------------------------------------------------------------------------
+  oscillation_recovery: true      # ✅ 开启：检测并尝试从震荡中恢复
+  oscillation_v_eps: 0.1          # 速度阈值
+  oscillation_angle_eps: 0.1      # 角度阈值
+  
+  # --------------------------------------------------------------------------
+  # 9. 可视化 (Visualization)
+  # --------------------------------------------------------------------------
+  publish_traj_pc: true           # 发布轨迹点云 (RViz 可见)
+  publish_cost_grid_pc: true      # 发布代价值网格 (RViz 可见)

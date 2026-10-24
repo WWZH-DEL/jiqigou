@@ -1,0 +1,36 @@
+<launch>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="fake_base_link" args="0 0 0 0 0 0 body_foot base_link" />
+    <node pkg="mbf_costmap_nav" type="mbf_costmap_nav" respawn="false" name="move_base1" output="screen" >
+    
+        <remap from="/map" to="prior_map" />
+        <remap from="/odom" to="Odometry" />
+        
+        
+        <param name="robot_base_frame" value="body_foot" />
+        <param name="global_costmap/robot_base_frame" value="body_foot" />
+        <param name="local_costmap/robot_base_frame" value="body_foot" />
+        
+        <param name="global_frame" value="map" />
+        <param name="global_costmap/global_frame" value="map" />
+        <param name="local_costmap/global_frame" value="odom" />
+    
+        <rosparam file="$(find sentry_nav)/param/mbf_params.yaml" command="load" />
+        
+        <rosparam file="$(find sentry_nav)/param/base_local_planner_params.yaml" command="load" />
+    
+        <rosparam file="$(find sentry_nav)/param/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find sentry_nav)/param/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find sentry_nav)/param/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find sentry_nav)/param/global_costmap_params.yaml" command="load" />
+        
+    </node>
+
+    <!--<node pkg="sentry_nav" type="trans_tf_2d" name="trans_tF_2d" />
+    <node pkg="sentry_nav" type="trans_tf_2d_odom" name="trans_tF_2d_odom" /> -->
+    <node pkg="sentry_nav" type="trans_odom_2d" name="trans_odom_2d" />
+	<include file="$(find velocity_smoother_ema)/launch/velocity_smoother_ema.launch">
+	</include>
+	
+    <node pkg="sentry_nav" type="nav_commander.py" name="nav_commander" output="screen" />
+	
+</launch>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+    <!-- 节点1：路径发布 publish_path.py，循环发布/global_path -->
+    <node
+        name="path_publisher"
+        pkg="sentry_nav"
+        type="publish_path.py"
+        output="screen"
+        respawn="false">
+    </node>
+
+    <!-- 节点2：纯追踪控制器 test.py，订阅全局路径+激光，输出/cmd_vel -->
+    <node
+        name="pure_pursuit_tracker"
+        pkg="sentry_nav"
+        type="test.py"
+        output="screen"
+        respawn="false">
+    </node>
+
+    <!-- 节点3：cmd_vel转发LCM cmdvel_to_lcm.py，转发底盘控制指令 -->
+    <node
+        name="cmdvel_to_lcm"
+        pkg="cmdvel2lcm_py"
+        type="cmdvel_to_lcm.py"
+        output="screen"
+        respawn="false">
+    </node>
+
+</launch>

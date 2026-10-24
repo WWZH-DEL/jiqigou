@@ -1,0 +1,8 @@
+prefix=/home/nuc-admin/catkin_ws/install
+
+Name: cmdvel2lcm_py
+Description: Description of cmdvel2lcm_py
+Version: 0.0.1
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
